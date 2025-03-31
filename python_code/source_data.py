@@ -65,7 +65,7 @@ if __name__ == "__main__":
         # TODO: more robust quality control for the different columns
         if resource_type == 'starships':
             df['length'] = df['length'].str.replace(',','')
-        df.to_csv(pathlib.Path(__file__).parent.parent / 'seeds' / f'raw_{resource_type}.csv')
+        df.to_csv(pathlib.Path(__file__).parent.parent / 'raw_data_files' / f'raw_{resource_type}.csv')
     
     print('Done')
 
