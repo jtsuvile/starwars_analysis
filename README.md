@@ -1,16 +1,26 @@
 # An analysis of StarWars data using Python, dbt, and Quarto
 
-This is a toy project fetching data from the (Star Wars API )[https://swapi.dev/]
-### Using the starter project
+This is a toy project fetching data from the [Star Wars API (SWAPI)](https://swapi.dev/), transforming the data into facts and dimensions model, and presenting some insights of the data in a Quarto-document.
 
-Try running the following commands:
-- dbt run
-- dbt test
+## Running the code 
+The project is divided into three different steps, each running separately. 
 
+### Setup
 
-### Resources:
-- Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-- Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-- Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
-- Find [dbt events](https://events.getdbt.com) near you
-- Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
+Install the conda environment with 
+
+```conda env create -f environment.yml``` 
+
+### Step 1: Fetch data
+First, in order to fetch the data, run 
+
+```python python_code/source_data.py```
+
+### Step 2: 
+In order to run the dbt data pipeline, run
+
+```dbt build```
+
+### Step 3: ~~Profit~~ Analysis (not implemented yet)
+
+A Quarto file with some simple analyses will be drafted shortly.
