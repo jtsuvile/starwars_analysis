@@ -56,13 +56,15 @@ if __name__ == "__main__":
     relevant_tables = config.items( "tables" )
 
     # read in each table as defined in the config file 
-    # and save them as seeds to dbt process
+    # and save them as seeds for dbt to process
     for key, table in relevant_tables:
-        print(key)
-        print(table)
         resource_type = key
         df = get_all_of(url, resource_type)
-        # TODO: consider separator character for csv, comma probably a bad choice
+        # Removing thousands indicator for a specific column in a specific table 
+        # since it's throwing errors that prevent the table from getting loaded
+        # TODO: more robust quality control for the different columns
+        if resource_type == 'starships':
+            df['length'] = df['length'].str.replace(',','')
         df.to_csv(pathlib.Path(__file__).parent.parent / 'seeds' / f'raw_{resource_type}.csv')
     
     print('Done')
