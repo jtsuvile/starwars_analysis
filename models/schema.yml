@@ -1,0 +1,66 @@
+version: 1
+
+models:
+  - name: fct_people
+    description: "Fact table relating to the characters in the films"
+    columns:
+      - name: resource_url
+        description: "the hypermedia URL of this resource, also acts as primary key"
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_film_appearances
+    description: "All appearances of different types of resources in the different films"
+    columns:
+      - name: url
+        description: "Film URL"
+        tests:
+          - not_null
+      - name: resource_type
+        description: "Type of resource that appeared in the film"
+        tests:
+          - accepted_values:
+              values: ['person','species','starship','vehicle']
+          - not_null
+      - name: resource
+        description: "Resource url, also acting as foreign key"
+        tests:
+          - not_null
+        
+  - name: dim_starships
+    description: "Dimension table about the different starships"
+    columns:
+      - name: resource_url
+        description: "the hypermedia URL of this resource, also acts as primary key"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_vehicles
+    description: "Dimension table about the different species present in the movies"
+    columns:
+      - name: resource_url
+        description: "the hypermedia URL of this resource, also acts as primary key"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_films
+    description: "Dimension table about the different movies"
+    columns:
+      - name: resource_url
+        description: "the hypermedia URL of this resource, also acts as primary key"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_species
+    description: "Dimension table about the different species present in the movies"
+    columns:
+      - name: resource_url
+        description: "the hypermedia URL of this resource, also acts as primary key"
+        tests:
+          - unique
+          - not_null
+

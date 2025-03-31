@@ -1,0 +1,7 @@
+starwars_analysis:
+
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: 'starwars_data.duckdb'

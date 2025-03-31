@@ -1,5 +1,6 @@
-Welcome to your new dbt project!
+# An analysis of StarWars data using Python, dbt, and Quarto
 
+This is a toy project fetching data from the (Star Wars API )[https://swapi.dev/]
 ### Using the starter project
 
 Try running the following commands:
