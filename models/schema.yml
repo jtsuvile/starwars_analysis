@@ -9,11 +9,29 @@ models:
         tests:
           - unique
           - not_null
+      - name: character_name
+        description: "The name of this person."
+      - name: height
+        description: "The height of the person in centimeters."
+      - name: mass
+        description: "The mass of the person in kilograms."
+      - name: hair_color
+        description: "The hair color of this person. Will be 'unknown' if not known or 'n/a' if the person does not have hair."
+      - name: skin_color
+        description: "The skin color of this person."
+      - name: eye_color
+        description: "The eye color of this person. Will be 'unknown' if not known or 'n/a' if the person does not have an eye."
+      - name: birth_year
+        description: "The birth year of the person, using the in-universe standard of BBY or ABY - Before the Battle of Yavin or After the Battle of Yavin. The Battle of Yavin is a battle that occurs at the end of Star Wars episode IV: A New Hope."
+      - name: gender
+        description: "The gender of this person. Either 'Male', 'Female' or 'unknown', 'n/a' if the person does not have a gender."
+      - name: species
+        description: "An array of species resource URLs that this person belongs to."
 
   - name: fct_film_appearances
     description: "All appearances of different types of resources in the different films"
     columns:
-      - name: url
+      - name: film_url
         description: "Film URL"
         tests:
           - not_null
@@ -23,7 +41,7 @@ models:
           - accepted_values:
               values: ['person','species','starship','vehicle']
           - not_null
-      - name: resource
+      - name: resource_url
         description: "Resource url, also acting as foreign key"
         tests:
           - not_null
@@ -36,6 +54,32 @@ models:
         tests:
           - unique
           - not_null
+      - name: starship_name
+        description: "The name of this starship. The common name, such as 'Death Star'."
+      - name: model
+        description: "The model or official name of this starship. Such as 'T-65 X-wing' or 'DS-1 Orbital Battle Station'."
+      - name: starship_class
+        description: "The class of this starship, such as 'Starfighter' or 'Deep Space Mobile Battlestation'."
+      - name: manufacturer
+        description: "The manufacturer of this starship. Comma separated if more than one."
+      - name: cost_in_credits
+        description: "The cost of this starship new, in galactic credits."
+      - name: length
+        description: "The length of this starship in meters."
+      - name: max_atmosphering_speed
+        description: "The maximum speed of this starship in the atmosphere. 'N/A' if this starship is incapable of atmospheric flight."
+      - name: hyperdrive_rating
+        description: "The class of this starships hyperdrive."
+      - name: MGLT
+        description: "The Maximum number of Megalights this starship can travel in a standard hour. A 'Megalight' is a standard unit of distance and has never been defined before within the Star Wars universe. This figure is only really useful for measuring the difference in speed of starships. We can assume it is similar to AU, the distance between our Sun (Sol) and Earth."
+      - name: crew
+        description: "The number of personnel needed to run or pilot this starship."
+      - name: passengers
+        description: "The number of non-essential people this starship can transport."
+      - name: cargo_capacity
+        description: "The maximum number of kilograms that this starship can transport."
+      - name: consumables
+        description: "The maximum length of time that this starship can provide consumables for its entire crew without having to resupply."
 
   - name: dim_vehicles
     description: "Dimension table about the different species present in the movies"
@@ -45,6 +89,28 @@ models:
         tests:
           - unique
           - not_null
+      - name: vehicle_name
+        description: "The name of this vehicle. The common name, such as 'Sand Crawler' or 'Speeder bike'."
+      - name: model
+        description: "The model or official name of this vehicle. Such as 'All-Terrain Attack Transport'."
+      - name: vehicle_class
+        description: "The class of this vehicle, such as 'Wheeled' or 'Repulsorcraft'."
+      - name: manufacturer
+        description: "The manufacturer of this vehicle. Comma separated if more than one."
+      - name: cost_in_credits
+        description: "The cost of this vehicle new, in Galactic Credits."
+      - name: length
+        description: "The length of this vehicle in meters."
+      - name: max_atmosphering_speed
+        description: "The maximum speed of this vehicle in the atmosphere."
+      - name: crew
+        description: "The number of personnel needed to run or pilot this vehicle." 
+      - name: passengers
+        description: "The number of non-essential people this vehicle can transport."
+      - name: cargo_capacity
+        description: "The maximum number of kilograms that this vehicle can transport."
+      - name: consumables
+        description: "The maximum length of time that this vehicle can provide consumables for its entire crew without having to resupply."
 
   - name: dim_films
     description: "Dimension table about the different movies"
@@ -54,6 +120,18 @@ models:
         tests:
           - unique
           - not_null
+      - name: title
+        description: "The title of this film"
+      - name: episode_id
+        description: "The episode number of this film."
+      - name: opening_crawl
+        description: "The opening paragraphs at the beginning of this film."
+      - name: director
+        description: "The name of the director of this film."
+      - name: producer
+        description: "The name(s) of the producer(s) of this film. Comma separated."
+      - name: release_date
+        description: "The ISO 8601 date format of film release at original creator country."
 
   - name: dim_species
     description: "Dimension table about the different species present in the movies"
@@ -63,4 +141,21 @@ models:
         tests:
           - unique
           - not_null
-
+      - name: species_name
+        description: "The name of this species."
+      - name: classification
+        description: "The classification of this species, such as 'mammal' or 'reptile'."
+      - name: designation
+        description: "The designation of this species, such as 'sentient'."
+      - name: average_height
+        description: "The average height of this species in centimeters."
+      - name: skin_colors
+        description: "A comma-separated string of common skin colors for this species, 'none' if this species does not typically have skin."
+      - name: hair_colors
+        description: "A comma-separated string of common hair colors for this species, 'none' if this species does not typically have hair."
+      - name: eye_colors
+        description: "A comma-separated string of common eye colors for this species, 'none' if this species does not typically have eyes."
+      - name: average_lifespan
+        description: "The average lifespan of this species in years."
+      - name: language
+        description: "The language commonly spoken by this species."
