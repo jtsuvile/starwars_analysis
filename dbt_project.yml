@@ -32,3 +32,5 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   starwars_analysis:
 
+flags:
+  send_anonymous_usage_stats: false
