@@ -1,0 +1,10 @@
+---
+title: "My document"
+format:
+  html:
+    toc: true
+    html-math-method: katex
+    css: styles.css
+---
+
+This is a Quarto website associated with code from [this github repository](https://github.com/jtsuvile/starwars_analysis)

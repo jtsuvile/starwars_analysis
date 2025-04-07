@@ -4,3 +4,7 @@ dbt_packages/
 logs/
 *.csv
 *.duckdb
+
+# quarto-related
+/.quarto/
+/_site/
