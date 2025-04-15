@@ -1,24 +1,20 @@
-with source as (
-
-    select * from {{ ref('stg_people') }}
-
-),
-
-renamed as (
+with renamed as (
     select 
-
-        resource_url
-        ,character_name
-        ,height
-        ,mass
-        ,hair_color
-        ,skin_color
-        ,eye_color
-        ,birth_year
-        ,gender
-        ,trim(trim(species, '[]'), ''' ') as species
-        
-    from source
+    p.resource_url
+    ,p.character_name
+    ,height
+    ,mass
+    ,hair_color
+    ,skin_color
+    ,eye_color
+    ,birth_year
+    ,gender
+    ,coalesce(
+        NULLIF(p.species,''),
+        e.species_url) as species
+    from {{ ref('stg_people') }} p
+    left join {{ ref('stg_errata_people') }} e
+    on p.resource_url = e.resource_url 
 )
 
 select * from renamed
