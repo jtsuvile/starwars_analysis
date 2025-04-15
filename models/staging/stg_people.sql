@@ -15,7 +15,7 @@ renamed as (
         ,eye_color
         ,birth_year
         ,gender
-        ,species
+        ,trim(trim(species, '[]'), ''' ') as species
         
     from source
 )
