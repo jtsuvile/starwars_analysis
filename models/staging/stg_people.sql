@@ -1,14 +1,13 @@
 with source as (
 
-    select * from {{ ref('stg_people') }}
+    select * from {{ ref('raw_people') }}
 
 ),
 
 renamed as (
     select 
-
-        resource_url
-        ,character_name
+        url as resource_url
+        ,name as character_name
         ,height
         ,mass
         ,hair_color
@@ -16,7 +15,7 @@ renamed as (
         ,eye_color
         ,birth_year
         ,gender
-        ,trim(trim(species, '[]'), ''' ') as species
+        ,species
         
     from source
 )

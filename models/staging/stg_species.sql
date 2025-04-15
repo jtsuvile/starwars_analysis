@@ -1,14 +1,14 @@
 with source as (
 
-    select * from {{ ref('stg_species') }}
+    select * from {{ ref('raw_species') }}
 
 ),
 
 renamed as (
     select 
     
-        resource_url
-        ,species_name
+        url as resource_url
+        ,name as species_name
         ,classification
         ,designation
         ,average_height

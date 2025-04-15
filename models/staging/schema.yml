@@ -1,7 +1,7 @@
 version: 1
 
 models:
-  - name: fct_people
+  - name: stg_people
     description: "Fact table relating to the characters in the films"
     columns:
       - name: resource_url
@@ -28,25 +28,17 @@ models:
       - name: species
         description: "An array of species resource URLs that this person belongs to."
 
-  - name: fct_film_appearances
-    description: "All appearances of different types of resources in the different films"
+  - name: stg_errata_people
+    description: "Fact table relating to the characters in the films"
     columns:
-      - name: film_url
-        description: "Film URL"
-        tests:
-          - not_null
-      - name: resource_type
-        description: "Type of resource that appeared in the film"
-        tests:
-          - accepted_values:
-              values: ['person','species','starship','vehicle']
-          - not_null
       - name: resource_url
-        description: "Resource url, also acting as foreign key"
-        tests:
-          - not_null
-        
-  - name: dim_films
+        description: "the hypermedia URL of the relevant character, also acts as primary key"
+      - name: character_name
+        description: "The name of this person."
+      - name: species_url
+        description: "A species resource URL that this person belongs to."
+
+  - name: stg_films
     description: "Dimension table about the different movies"
     columns:
       - name: film_url
@@ -67,7 +59,7 @@ models:
       - name: release_date
         description: "The ISO 8601 date format of film release at original creator country."
 
-  - name: dim_species
+  - name: stg_species
     description: "Dimension table about the different species present in the movies"
     columns:
       - name: resource_url
