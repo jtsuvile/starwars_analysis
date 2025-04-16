@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 def make_request(query):
     """Get response to a request"""
-    response = requests.get(query)
+    response = requests.get(query, verify=False)
     # TODO: could have more robust error handling for API calls, e.g. retries
     response.raise_for_status()
     return response.json()
@@ -40,8 +40,8 @@ def get_all_of(url, resource_type):
         df = pd.concat([df, df_page])
         counter += 1
 
-    logging.info(f"Fetched {len(df)} rows of {resource_type} using {counter} " +
-                 "calls to the SWapi")
+    logging.info(f"Fetched {len(df)} rows of {resource_type} using {counter}" +
+                 " calls to the SWapi")
 
     # Check if we got all resources we expected
     # I'm not 100% sure if this should be an error instead of a warning.
@@ -77,7 +77,7 @@ def main():
         if resource_type == 'starships':
             df['length'] = df['length'].str.replace(',', '')
         df.to_csv(pathlib.Path(__file__).parent.parent / 'seeds' /
-                  f'raw_{resource_type}.csv')
+                  f'raw_{resource_type}.csv', index=False)
 
     logging.info('Done with importing the following tables:' +
                  f'{", ".join(str(i[0]) for i in relevant_tables)}')
