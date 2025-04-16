@@ -2,8 +2,29 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "My document",
+    "title": "Analysis of Star Wars film data",
     "section": "",
-    "text": "This is a Quarto website associated with code from this github repository"
+    "text": "This is a Quarto website associated with code from this github repository."
+  },
+  {
+    "objectID": "index.html#character-arcs-of-returning-characters",
+    "href": "index.html#character-arcs-of-returning-characters",
+    "title": "Analysis of Star Wars film data",
+    "section": "Character arcs of returning characters",
+    "text": "Character arcs of returning characters\n\n\n\n\n\nContinuous story arcs (lighter line) and story arcs that skip some movies (darker lines) shown for all recurring characters."
+  },
+  {
+    "objectID": "index.html#species-representation",
+    "href": "index.html#species-representation",
+    "title": "Analysis of Star Wars film data",
+    "section": "Species representation",
+    "text": "Species representation\nThe Star Wars universe has a range of different species that are represented. The majority of these species can be classified as mammal. This is represented in the character gallery of the movies, where the majority of named characters in each movie is a mammal. This is particularly true in the original trilogy, where the only non-mammal named characters are the druids R2-D2 and C-3PO, and Jabba Desilijic Tiure, who is more commonly known as Jabba de Hutt, who belongs to the Hutt species (classification: gastropod).\nMoreover, the following plot clearly shows a more numerous character gallery in the prequel trilogy, which was published later, compared with the original trilogy. The plot is interactive, so you can hover over the different data points to see a full list of named characters from that species class in that movie.\n\n\n        \n        \n        \nSpecies representation by main classification in the different movies shows more characters and more non-mammal characters in the prequel trilogy compared with the original trilogy"
+  },
+  {
+    "objectID": "index.html#nlp-analysis-of-the-opening-crawl",
+    "href": "index.html#nlp-analysis-of-the-opening-crawl",
+    "title": "Analysis of Star Wars film data",
+    "section": "NLP analysis of the opening crawl",
+    "text": "NLP analysis of the opening crawl\nThe Star Wars opening crawl is a signature device of the opening sequences of every numbered film of the Star Wars series, an American epic space opera franchise created by George Lucas. Within a black sky background featuring a smattering of stars, the crawl is preceded both by the opening static blue text, “A long time ago in a galaxy far, far away….” and by the Star Wars logo which recedes toward a central point on the screen before disappearing. The crawl text, which describes the backstory and context of the film, then recedes toward a higher point in relation to the screen and with an apparent effect of disappearing in the distance. 1\n\n\n\n\n\nWord cloud of the opening crawls of all the movies shows prevalent common themes related to the empire and rebellion and as well as the setting in space"
   }
 ]
