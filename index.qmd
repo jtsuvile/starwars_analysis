@@ -3,15 +3,25 @@ title: "Analysis of Star Wars film data"
 author: Juulia Suvilehto
 format:
   html:
-    theme: slate
     backgroundcolor: "black"
     fontcolor: "white"
     linkcolor: "yellow"
     mainfont: "Helvetica"
     echo: false
+    toc: true
+    toc-location: right
+    code-links:
+    - text: Data Import Code
+      icon: file-code
+      href: data-import.py
+    include-after-body: 
+      file: resources/footer.html
+      #text: "<center>Copyright Juulia Suvilehto. All rights reserved.</center>"
+    anchor-sections: false
+    smooth-scroll: true
 ---
 
-This is a Quarto website associated with code from [this github repository](https://github.com/jtsuvile/starwars_analysis).
+
 
 ```{python}
 #| warning: false
@@ -31,10 +41,6 @@ import string
 from PIL import Image
 import random
 
-# for the UpSet plot
-from upsetplot import from_indicators, UpSet
-import seaborn as sns
-
 random_seed = 42
 
 con = duckdb.connect(database = "starwars_data.duckdb", read_only = True)
@@ -43,6 +49,10 @@ species = con.execute("SELECT * FROM dim_species").df()
 ppl = con.execute("SELECT * FROM fct_people").df()
 films = con.execute("SELECT * FROM dim_films").df()
 ```
+
+The main Star Wars saga consists of three trilogies: *the prequel trilogy*, *the original trilogy*, and *the sequel trilogy*. Together, these are referred to as *"the Skywalker Saga"*. In the cinematic universe, the order of the trilogies is as above, but they were released in a different order. The original trilogy was released 1977-1983, the prequel trilogy in 1999-2005, and the sequel trilogy in 2015-2019. 
+
+In this analysis, we look at some of the differences between the prequel trilogy and the original trilogy.
 
 ## Character arcs of returning characters
 
@@ -92,12 +102,13 @@ df = df.sort_values(by=['character_name', 'x'])
 ```{python}
 # Add linebreaks to movie names
 
-titles_with_spaces = {'A New Hope': 'A New Hope',
-'The Empire Strikes Back':'The Empire\nStrikes\nBack',
-'Return of the Jedi':'Return of\nthe Jedi',
+titles_with_spaces = {
 'The Phantom Menace':'The Phantom\nMenace',
 'Attack of the Clones':'Attack of\nthe Clones',
-'Revenge of the Sith':'Revenge of\nthe Sith'} 
+'Revenge of the Sith':'Revenge of\nthe Sith',
+'A New Hope': 'A New Hope',
+'The Empire Strikes Back':'The Empire\nStrikes\nBack',
+'Return of the Jedi':'Return of\nthe Jedi'} 
 
 movie_order['title_pretty'] = movie_order['title'].map(titles_with_spaces).fillna(df['title'])
 ```
@@ -123,6 +134,13 @@ for char, group in df.groupby('character_name'):
 
 # Plot dots
 plt.scatter(df['x'], df['y'], color='white', s=20, zorder=3)
+
+# Add shaded trilogy regions
+plt.axvspan(-0.2, 2.5, color='white', alpha=0.2)
+
+# Trilogy labels
+plt.text(-0.1, -1.2, "Prequel Trilogy", color='white')
+plt.text(3.8, -1.2, "Original Trilogy", color='white')
 
 # Formatting
 plt.yticks(list(char_map.values()), list(char_map.keys()), color='white', size=8)
@@ -211,7 +229,7 @@ fig = px.area(
     custom_data=['character_names'],  # pass character names to hover
     hover_data=None,  # we'll control hover ourselves
     labels={
-        'episode_roman': 'Episode',
+        'episode_roman': 'EPISODE',
         'character_count': '# Unique Characters'
     },
     color_discrete_sequence= px.colors.sequential.Brwnyl
@@ -261,7 +279,7 @@ all_opening_crawls = '\n'.join(films.opening_crawl.tolist())
 all_opening_crawls_minus_punctuation = all_opening_crawls.translate(str.maketrans('', '', string.punctuation)).lower()
 
 # Read in the word cloud mask
-mask = np.array(Image.open("analyses/sw_logo.png"))
+mask = np.array(Image.open("resources/sw_logo.png"))
 
 # recoloring function to make the word cloud yellow
 def recolor_with_yellow(word, font_size, position, orientation, random_state=None, **kwargs):
