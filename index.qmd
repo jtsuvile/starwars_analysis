@@ -41,6 +41,14 @@ import string
 from PIL import Image
 import random
 
+# word imporance 
+from sklearn.feature_extraction.text import TfidfVectorizer
+import nltk
+from nltk.corpus import stopwords
+import string
+nltk.download('stopwords')
+
+
 random_seed = 42
 
 con = duckdb.connect(database = "starwars_data.duckdb", read_only = True)
@@ -298,5 +306,71 @@ plt.imshow(wordcloud.recolor(color_func=recolor_with_yellow, random_state=random
 fig.patch.set_facecolor('black')
 plt.axis("off")
 plt.tight_layout()
+plt.show()
+```
+
+Digging more into the words used in the opening crawls shows differences between the prequel trilogy and the original trilogy. The most distinctive words in the prequel trilogy opening crawls reflect the key themes in the trilogy: the corruption of the Galactic Republic and its last chancellor, Sheev Palpatine. The most distinctive words in the original trilogy reflect the themes central in those movies: the quest for freedom by the Rebel Alliance and the central role of Luke Skywalker.
+
+
+```{python}
+# prepare data for word importance plot
+
+# Combine the crawl texts per trilogy
+prequel_text = films.query('episode_id < 4').opening_crawl.str.cat()
+original_text = films.query('episode_id > 3').opening_crawl.str.cat()
+
+# Preprocess
+def preprocess(text):
+    stop_words = set(stopwords.words('english'))
+    text = text.lower()
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    return ' '.join([word for word in text.split() if word not in stop_words])
+
+docs = [preprocess(prequel_text), preprocess(original_text)]
+
+# TF-IDF vectorization
+vectorizer = TfidfVectorizer()
+tfidf_matrix = vectorizer.fit_transform(docs)
+features = vectorizer.get_feature_names_out()
+
+# Extract top N words
+def get_top_n_words(tfidf_row, features, top_n=10):
+    scores = tfidf_row.toarray().flatten()
+    top_indices = scores.argsort()[-top_n:][::-1]
+    return {features[i]: scores[i] for i in top_indices}
+
+top_words_prequel = get_top_n_words(tfidf_matrix[0], features)
+top_words_original = get_top_n_words(tfidf_matrix[1], features)
+```
+
+
+```{python}
+#| fig-cap: "Top distinctive words by TF-IDF score in the opening crawls of the Star Wars prequel and original trilogies"
+#| label: wordimportance
+
+# Plotting word importance as side-by-side bar plots
+fig, (ax1, ax2) = plt.subplots(1, 2,  sharey=False, sharex=True)
+fig.patch.set_facecolor('black')  # full background
+
+# Prequel
+prequel_words = list(top_words_prequel.keys())[::-1]
+prequel_scores = list(top_words_prequel.values())[::-1]
+ax1.barh(prequel_words, prequel_scores, color='goldenrod')
+ax1.set_title('Prequel Trilogy', color='white')
+ax1.set_facecolor('black')
+ax1.tick_params(colors='white')
+ax1.yaxis.set_tick_params(length=0)
+
+# Original
+original_words = list(top_words_original.keys())[::-1]
+original_scores = list(top_words_original.values())[::-1]
+ax2.barh(original_words, original_scores, color='steelblue')
+ax2.set_title('Original Trilogy', color='white')
+ax2.set_facecolor('black')
+ax2.tick_params(colors='white')
+ax2.yaxis.set_tick_params(length=0)
+
+fig.text(0.55, -0.03, 'TF-IDF Score', ha='center', color='white', fontsize=12)
+plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
 ```
