@@ -17,6 +17,9 @@ renamed as (
         ,eye_colors
         ,average_lifespan
         ,language
+        ,homeworld
+        ,people
+        ,films
         
     from source
 )

@@ -15,6 +15,9 @@ renamed as (
         ,release_date
         ,species
         ,characters
+        ,vehicles
+        ,starships
+        ,planets
 
     from source
 )
