@@ -77,7 +77,7 @@ def main():
         if resource_type == 'starships':
             df['length'] = df['length'].str.replace(',', '')
         df.to_csv(pathlib.Path(__file__).parent.parent / 'seeds' /
-                  f'raw_{resource_type}.csv', index=False)
+                  f'raw_{resource_type}.csv')
 
     logging.info('Done with importing the following tables:' +
                  f'{", ".join(str(i[0]) for i in relevant_tables)}')
