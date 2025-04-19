@@ -4,14 +4,14 @@
     "href": "index.html",
     "title": "Analysis of Star Wars film data",
     "section": "",
-    "text": "The main Star Wars saga consists of three trilogies: the prequel trilogy, the original trilogy, and the sequel trilogy. Together, these are referred to as “the Skywalker Saga”. In the cinematic universe, the order of the trilogies is as above, but they were released in a different order. The original trilogy was released 1977-1983, the prequel trilogy in 1999-2005, and the sequel trilogy in 2015-2019.\nIn this analysis, we look at some of the differences between the prequel trilogy and the original trilogy."
+    "text": "The main Star Wars saga consists of three trilogies: the prequel trilogy, the original trilogy, and the sequel trilogy. Together, these are referred to as “the Skywalker Saga”. In the cinematic universe, the order of the trilogies is as above, but they were released in a different order. The original trilogy was released 1977-1983, the prequel trilogy in 1999-2005, and the sequel trilogy in 2015-2019.\nThe following analysis builds on the data from the SW API which covers the prequel trilogy and the original trilogy."
   },
   {
     "objectID": "index.html#character-arcs-of-returning-characters",
     "href": "index.html#character-arcs-of-returning-characters",
     "title": "Analysis of Star Wars film data",
     "section": "Character arcs of returning characters",
-    "text": "Character arcs of returning characters\n\n\n\n\n\nContinuous story arcs (lighter line) and story arcs that skip some movies (darker lines) shown for all recurring characters."
+    "text": "Character arcs of returning characters\nThe appearance of recurring characters in the different films.\n\n\n\n\n\nContinuous story arcs (lighter line) and story arcs that skip some movies (darker lines) shown for all recurring characters."
   },
   {
     "objectID": "index.html#species-representation",

@@ -60,16 +60,17 @@ films = con.execute("SELECT * FROM dim_films").df()
 
 The main Star Wars saga consists of three trilogies: *the prequel trilogy*, *the original trilogy*, and *the sequel trilogy*. Together, these are referred to as *"the Skywalker Saga"*. In the cinematic universe, the order of the trilogies is as above, but they were released in a different order. The original trilogy was released 1977-1983, the prequel trilogy in 1999-2005, and the sequel trilogy in 2015-2019. 
 
-In this analysis, we look at some of the differences between the prequel trilogy and the original trilogy.
+The following analysis builds on the data from [the SW API](https://swapi.dev/) which covers the prequel trilogy and the original trilogy. 
 
 ## Character arcs of returning characters
 
+The appearance of recurring characters in the different films.
+
 ```{python}
+#prep data for character arc plot
+
 df = pd.merge(pd.merge(film_appearances.query("resource_type == 'person'"), ppl, how='left', on='resource_url'), films, how='left', on='film_url').sort_values('episode_id')
-```
 
-
-```{python}
 # Ensure correct sorting for both X and Y axis
 
 # Sort by movie release order
@@ -355,8 +356,8 @@ fig.patch.set_facecolor('black')  # full background
 # Prequel
 prequel_words = list(top_words_prequel.keys())[::-1]
 prequel_scores = list(top_words_prequel.values())[::-1]
-ax1.barh(prequel_words, prequel_scores, color='goldenrod')
-ax1.set_title('Prequel Trilogy', color='white')
+ax1.barh(prequel_words, prequel_scores, color='slategray')
+ax1.set_title('Prequel Trilogy', color='white', loc='left')
 ax1.set_facecolor('black')
 ax1.tick_params(colors='white')
 ax1.yaxis.set_tick_params(length=0)
@@ -364,8 +365,8 @@ ax1.yaxis.set_tick_params(length=0)
 # Original
 original_words = list(top_words_original.keys())[::-1]
 original_scores = list(top_words_original.values())[::-1]
-ax2.barh(original_words, original_scores, color='steelblue')
-ax2.set_title('Original Trilogy', color='white')
+ax2.barh(original_words, original_scores, color='slategray', alpha=0.5)
+ax2.set_title('Original Trilogy', color='white', loc='left')
 ax2.set_facecolor('black')
 ax2.tick_params(colors='white')
 ax2.yaxis.set_tick_params(length=0)
