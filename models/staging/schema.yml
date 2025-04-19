@@ -85,3 +85,21 @@ models:
         description: "The average lifespan of this species in years."
       - name: language
         description: "The language commonly spoken by this species."
+
+  - name: stg_screentime
+    description: "Fact table about the screen time per character and movie for the main characters"
+    columns:
+      - name: character_name
+        description: "The name of this character."
+        quote: false
+      - name: film_name
+        description: "The name of the film."
+      - name: episode
+        description: "Star Wars Episode number expressed in roman numerals"
+      - name: release_year
+        description: "The year the movie was released"
+      - name: minutes
+        description: "The number of minutes this character is on screen."
+      - name: proportion
+        description: "The proportion of the whole film length this character is on screen expressed in %."
+
