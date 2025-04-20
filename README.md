@@ -1,6 +1,6 @@
 # An analysis of StarWars data using Python, dbt, and Quarto
 
-This is a toy project fetching data from the [Star Wars API (SWAPI)](https://swapi.dev/), transforming the data into facts and dimensions model, and presenting some insights of the data in a Quarto-document.
+This is a toy project fetching data from the [Star Wars API (SWAPI)](https://swapi.dev/), transforming the data into facts and dimensions model, and presenting analyses of the data [in this Quarto docuument](https://jtsuvile.github.io/starwars_analysis/).
 
 ## Running the code 
 The project is divided into three different steps, each running separately. 
@@ -14,6 +14,7 @@ The project is divided into three different steps, each running separately.
 
 ### Step 1: Fetch data
 In order to fetch the data, run ```python python_code/source_data.py```. 
+NB: When I started working on this project, the SW API was working fine. Now it seems that there is some issues with the site certificate which has necessitated reading data using verify=False. This will throw warnings (as it should).
 
 ### Step 2: DBT
 In order to run the dbt data pipeline, run ```dbt build``` after you've fetched the data.
@@ -34,6 +35,7 @@ A running list of issues with data quality that I've discovered during the data 
 
 | Impacted table | Issue description | How is it fixed right now | Is this a temporary fix or a permanent fix? |
 | -------- | ------- | -------- | ------- |
-| stg_people, fct_people | Most of the human characters, one droid, and one umbaran don't have their species declared | A manually collated errata table is provided in seeds | Unless we can get the SW API to edit this, this is as good as it gets
+| stg_people, fct_people, fct_film_appearances | Most of the human characters, one droid, and one umbaran don't have their species declared | A manually collated errata table is provided in seeds | Unless we can get the SW API to edit this, this is as good as it gets
 | stg_species, dim_species | One species (Twi'lek) with classification 'mammal' is erraneously classified as 'mammals' in plural | Hotfix in index.qmd for the relevant plot | Would be better to fix earlier in the processing |
 | stg_species, dim_species | One species (Rodian) has classification 'sentient' and designation 'reptilian'. There are no other species with these specifications, but many species with classification 'reptilian' and classification 'sentient'. Assuming these should be the other way around. | Hotfix in index.qmd for the relevant plot | Would be better to fix earlier in the processing |
+| stg_species, dim_species | One species has classification 'reptile' instead of 'reptilian'. Assuming this is an error. | Hotfix in index.qmd for the relevant plot | Would be better to fix earlier in the processing |
