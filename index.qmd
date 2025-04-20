@@ -35,6 +35,11 @@ import pathlib
 # for the species representation
 import plotly.express as px
 
+# for the circular treemap
+import plotly.graph_objects as go
+from matplotlib.colors import to_rgb
+import colorsys
+
 # for word cloud
 from wordcloud import WordCloud
 import string
@@ -56,220 +61,14 @@ film_appearances = con.execute("SELECT * FROM fct_film_appearances").df()
 species = con.execute("SELECT * FROM dim_species").df()
 ppl = con.execute("SELECT * FROM fct_people").df()
 films = con.execute("SELECT * FROM dim_films").df()
+
+df = pd.merge(pd.merge(film_appearances.query("resource_type == 'person'"), ppl, how='left', on='resource_url'), films, how='left', on='film_url').sort_values('episode_id')
+
 ```
 
 The main Star Wars saga consists of three trilogies: *the prequel trilogy*, *the original trilogy*, and *the sequel trilogy*. Together, these are referred to as *"the Skywalker Saga"*. In the cinematic universe, the order of the trilogies is as above, but they were released in a different order. The original trilogy was released 1977-1983, the prequel trilogy in 1999-2005, and the sequel trilogy in 2015-2019. 
 
 The following analysis builds on the data from [the SW API](https://swapi.dev/) which covers the prequel trilogy and the original trilogy. 
-
-## Character arcs of returning characters
-
-The appearance of recurring characters in the different films.
-
-```{python}
-#prep data for character arc plot
-
-df = pd.merge(pd.merge(film_appearances.query("resource_type == 'person'"), ppl, how='left', on='resource_url'), films, how='left', on='film_url').sort_values('episode_id')
-
-# Ensure correct sorting for both X and Y axis
-
-# Sort by movie release order
-movie_order = (
-    df[['title', 'episode_id', 'release_date']]
-    .drop_duplicates()
-    .sort_values('episode_id')
-    .reset_index(drop=True)
-)
-
-# Map movie titles to numeric positions (for plotting)
-movie_order['x'] = range(len(movie_order))
-movie_map = dict(zip(movie_order['title'], movie_order['x']))
-
-# Apply x-coordinates to your data
-df['x'] = df['title'].map(movie_map)
-
-# Count how many unique movies each character appears in
-character_counts = df.groupby('character_name')['title'].nunique()
-
-# Sort characters by number of movie appearances (descending)
-sorted_characters = character_counts.sort_values(ascending=True)
-
-# Limit to recurring characters
-recurring_characters = sorted_characters[sorted_characters > 1].index.tolist()
-
-# limit to recurring characters
-df = df.query("character_name in @recurring_characters")
-
-# Assign y-positions based on this order
-char_map = {name: i for i, name in enumerate(recurring_characters)}
-df['y'] = df['character_name'].map(char_map)
-
-# Sort for line drawing
-df = df.sort_values(by=['character_name', 'x'])
-```
-
-```{python}
-# Add linebreaks to movie names
-
-titles_with_spaces = {
-'The Phantom Menace':'The Phantom\nMenace',
-'Attack of the Clones':'Attack of\nthe Clones',
-'Revenge of the Sith':'Revenge of\nthe Sith',
-'A New Hope': 'A New Hope',
-'The Empire Strikes Back':'The Empire\nStrikes\nBack',
-'Return of the Jedi':'Return of\nthe Jedi'} 
-
-movie_order['title_pretty'] = movie_order['title'].map(titles_with_spaces).fillna(df['title'])
-```
-
-```{python}
-#| fig-cap: "Continuous story arcs (lighter line) and story arcs that skip some movies (darker lines) shown for all recurring characters."
-#| label: storyarcs
-
-fig = plt.figure(figsize=(6, 8))
-ax = plt.gca()
-
-# Draw lines per character
-for char, group in df.groupby('character_name'):
-    x_vals = group['x'].tolist()
-    y_val = char_map[char]
-
-    # Go through pairs of consecutive appearances
-    for i in range(len(x_vals) - 1):
-        x1, x2 = x_vals[i], x_vals[i + 1]
-        # if story arc is continuous (two consecutive movies), use a lighter color, else use a darker one
-        color = 'white' if x2 - x1 == 1 else 'slategray'
-        plt.plot([x1, x2], [y_val, y_val], color=color, linewidth=5, alpha=0.7)
-
-# Plot dots
-plt.scatter(df['x'], df['y'], color='white', s=20, zorder=3)
-
-# Add shaded trilogy regions
-plt.axvspan(-0.2, 2.5, color='white', alpha=0.2)
-
-# Trilogy labels
-plt.text(-0.1, -1.2, "Prequel Trilogy", color='white')
-plt.text(3.8, -1.2, "Original Trilogy", color='white')
-
-# Formatting
-plt.yticks(list(char_map.values()), list(char_map.keys()), color='white', size=8)
-plt.xticks(movie_order['x'], movie_order['title_pretty'], ha='center', color='white', size=9)
-ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
-
-# no labels
-plt.xlabel("")
-plt.ylabel("")
-plt.title("")
-
-# dark mode
-plt.tight_layout()
-fig.patch.set_facecolor('black')
-ax.set_facecolor('black')
-
-# display
-plt.show()
-```
-
-## Species representation
-
-The Star Wars universe has a range of different species that are represented. The majority of these species can be classified as *mammal*. This is represented in the character gallery of the movies, where the majority of named characters in each movie is a mammal. This is particularly true in the original trilogy, where the only non-mammal named characters are the druids R2-D2 and C-3PO, and Jabba Desilijic Tiure, who is more commonly known as Jabba de Hutt, who belongs to the Hutt species (classification: gastropod).
-
-Moreover, the following plot clearly shows a more numerous character gallery in the prequel trilogy, which was published later, compared with the original trilogy. The plot is interactive, so you can hover over the different data points to see a full list of named characters from that species class in that movie.
-
-```{python}
-# prep data for species plot
-df_w_species = pd.merge(df, species, how='left', left_on = 'species', right_on='resource_url')
-
-# NB: there is one species with classification "mammals" instead of "mammal"
-# it should probably be "mammal" and fixed earlier on in the flow
-# but for now we fix it here
-df_w_species['classification'] = df_w_species.classification.str.removesuffix('s')
-
-# add roman numeral of episode id
-roman_numerals = {
-    1: 'I',
-    2: 'II',
-    3: 'III',
-    4: 'IV',
-    5: 'V',
-    6: 'VI'
-}
-
-df_w_species['episode_roman'] = df_w_species['episode_id'].map(roman_numerals)
-
-```
-
-
-```{python}
-
-# Step 1: Group and aggregate
-grouped = df_w_species.groupby(['episode_roman', 'classification'])['character_name'].agg(
-    character_count='nunique',
-    character_names=lambda x: '<br>'.join(sorted(set(x)))
-).reset_index()
-
-# fine-tuning data to get the hover tooltip to act right 
-# even when there are 0 characters of that species class present
-# find all combinations of movie and species
-all_combinations = pd.MultiIndex.from_product(
-    [grouped['episode_roman'].unique(), grouped['classification'].unique()],
-    names=['episode_roman', 'classification']
-)
-
-# Merge the full set with the original dataframe
-grouped_full = grouped.set_index(['episode_roman', 'classification']).reindex(all_combinations).reset_index()
-
-# Fill missing character_names with an empty string and character_count with 0
-grouped_full['character_names'] = grouped_full['character_names'].fillna('')
-grouped_full['character_count'] = grouped_full['character_count'].fillna(0)
-```
-
-
-```{python}
-#| label: species-representation-count
-#| fig-cap: Species representation by main classification in the different movies shows more characters and more non-mammal characters in the prequel trilogy compared with the original trilogy
-#TODO: something is off in how the captions get rendered, potentially related to knitr version??
-
-fig = px.area(
-    grouped_full,
-    x='episode_roman',
-    y='character_count',
-    color='classification',
-    custom_data=['character_names'],  # pass character names to hover
-    hover_data=None,  # we'll control hover ourselves
-    labels={
-        'episode_roman': 'EPISODE',
-        'character_count': '# Unique Characters'
-    },
-    color_discrete_sequence= px.colors.sequential.Brwnyl
-)
-
-# Custom hover to suppress weirdness on small/empty areas
-fig.update_traces(
-    hovertemplate="<b>Classification: %{fullData.name}</b><br># Characters: %{y}<br>"
-    "%{customdata[0]}<extra></extra>"
-)
-
-# Add shaded trilogy regions
-fig.add_vrect(x0=0, x1=2.5, fillcolor='white', opacity=0.2, line_width=0)
-
-# Trilogy labels
-fig.add_annotation(x=0.6, y=30,
-                   text="Prequel Trilogy", showarrow=False, font=dict(color='white', size=16))
-fig.add_annotation(x=4.4, y=30,
-                   text="Original Trilogy", showarrow=False, font=dict(color='white', size=16))
-
-fig.update_layout(
-    legend_title_text='Classification',
-    paper_bgcolor='black',  # Set the background color of the entire figure
-    plot_bgcolor='black',   # Set the background color of the plot area
-    font=dict(color='white'),  # Set all text to white
-    xaxis=dict(showgrid=False, zeroline=False),  # No grid lines for x-axis
-    yaxis=dict(showgrid=False, zeroline=False)  # No grid lines for y-axis
-)
-fig.show()
-
-```
 
 ## NLP analysis of the opening crawl 
 
@@ -373,5 +172,314 @@ ax2.yaxis.set_tick_params(length=0)
 
 fig.text(0.55, -0.03, 'TF-IDF Score', ha='center', color='white', fontsize=12)
 plt.tight_layout(rect=[0, 0, 1, 0.95])
+plt.show()
+```
+
+## Species representation
+
+The Star Wars universe has a range of different species that are represented. The majority of these species can be classified as *mammal*. This is represented in the character gallery of the movies, where the majority of named characters in each movie is a mammal. This is particularly true in the original trilogy, where the only non-mammal named characters are the druids R2-D2 and C-3PO, and Jabba Desilijic Tiure, who is more commonly known as Jabba de Hutt, who belongs to the Hutt species (classification: gastropod).
+
+Moreover, the following plot clearly shows a more numerous character gallery in the prequel trilogy, which was published later, compared with the original trilogy. The plot is interactive, so you can hover over the different data points to see a full list of named characters from that species class in that movie.
+
+```{python}
+# prep data for species plot
+df_w_species = pd.merge(df, species, how='left', left_on = 'species', right_on='resource_url')
+
+# NB: there is one species with classification "mammals" instead of "mammal"
+# it should probably be "mammal" and fixed earlier on in the flow
+# but for now we fix it here
+df_w_species['classification'] = df_w_species.classification.str.removesuffix('s')
+# there is one species that should be "reptilian" by classification and "sentient" 
+# by designation but these are turned around. Again, would be better to fix this earlier 
+# in the flow but we're fixing it here
+mask = df_w_species['classification'] == 'sentient'
+df_w_species.loc[mask, ['classification', 'designation']] = df_w_species.loc[mask, ['designation', 'classification']].values
+# there is one species that has classification "reptile" where everything else has "reptilian"
+df_w_species.loc[df_w_species['classification'] == 'reptile', 'classification'] = 'reptilian'
+
+# add roman numeral of episode id
+roman_numerals = {
+    1: 'I',
+    2: 'II',
+    3: 'III',
+    4: 'IV',
+    5: 'V',
+    6: 'VI'
+}
+
+df_w_species['episode_roman'] = df_w_species['episode_id'].map(roman_numerals)
+
+```
+
+```{python}
+
+# Step 1: Group and aggregate
+grouped = df_w_species.groupby(['episode_roman', 'classification'])['character_name'].agg(
+    character_count='nunique',
+    character_names=lambda x: '<br>'.join(sorted(set(x)))
+).reset_index()
+
+# fine-tuning data to get the hover tooltip to act right 
+# even when there are 0 characters of that species class present
+# find all combinations of movie and species
+all_combinations = pd.MultiIndex.from_product(
+    [grouped['episode_roman'].unique(), grouped['classification'].unique()],
+    names=['episode_roman', 'classification']
+)
+
+# Merge the full set with the original dataframe
+grouped_full = grouped.set_index(['episode_roman', 'classification']).reindex(all_combinations).reset_index()
+
+# Fill missing character_names with an empty string and character_count with 0
+grouped_full['character_names'] = grouped_full['character_names'].fillna('')
+grouped_full['character_count'] = grouped_full['character_count'].fillna(0)
+```
+
+```{python}
+#| label: species-representation-count
+#| fig-cap: Species representation by main classification in the different movies shows more characters and more non-mammal characters in the prequel trilogy compared with the original trilogy
+
+fig = px.area(
+    grouped_full,
+    x='episode_roman',
+    y='character_count',
+    color='classification',
+    custom_data=['character_names'],  # pass character names to hover
+    hover_data=None,  # we'll control hover ourselves
+    labels={
+        'episode_roman': 'EPISODE',
+        'character_count': '# Unique Characters'
+    },
+    color_discrete_sequence= px.colors.sequential.Brwnyl
+)
+
+# Custom hover to suppress weirdness on small/empty areas
+fig.update_traces(
+    hovertemplate="<b>Classification: %{fullData.name}</b><br># Characters: %{y}<br>"
+    "%{customdata[0]}<extra></extra>"
+)
+
+# Add shaded trilogy regions
+fig.add_vrect(x0=0, x1=2.5, fillcolor='white', opacity=0.2, line_width=0)
+
+# Trilogy labels
+fig.add_annotation(x=0.6, y=30,
+                   text="Prequel Trilogy", showarrow=False, font=dict(color='white', size=16))
+fig.add_annotation(x=4.4, y=30,
+                   text="Original Trilogy", showarrow=False, font=dict(color='white', size=16))
+
+fig.update_layout(
+    legend_title_text='Classification',
+    paper_bgcolor='black',  # Set the background color of the entire figure
+    plot_bgcolor='black',   # Set the background color of the plot area
+    font=dict(color='white'),  # Set all text to white
+    xaxis=dict(showgrid=False, zeroline=False),  # No grid lines for x-axis
+    yaxis=dict(showgrid=False, zeroline=False)  # No grid lines for y-axis
+)
+fig.show()
+
+```
+
+## Characters and species
+
+```{python}
+# Clean the data
+df_cleaned = df_w_species[['character_name', 'species_name', 'classification', 'designation']].drop_duplicates()
+df_sentient = df_cleaned[df_cleaned['designation'] == 'sentient'].copy()
+
+# Base classification colors (light variants)
+base_colors = {
+    'mammal': '#FFE81F',        # Yellow
+    'reptilian': '#00FFEA',     # Cyan
+    'amphibian': '#7FFF00',     # Green
+    'insectoid': '#FF5733',     # Orange
+    'artificial': '#FF00FF',    # Magenta
+    'unknown': '#AAAAAA'        # Gray fallback
+}
+
+# Helper to darken a hex color
+def darken(hex_color, factor):
+    r, g, b = to_rgb(hex_color)
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    l = max(0, l * (1 - factor))  # reduce lightness
+    r2, g2, b2 = colorsys.hls_to_rgb(h, l, s)
+    return f'rgb({int(r2*255)}, {int(g2*255)}, {int(b2*255)})'
+
+# Build hierarchy data
+fig = px.sunburst(
+    df_sentient,
+    path=['designation', 'classification', 'species_name', 'character_name'],
+    values=None,
+    branchvalues='total'
+)
+
+# Get labels & parents
+labels = fig.data[0]['labels']
+parents = fig.data[0]['parents']
+
+# Create a lookup table from character/species to classification
+classification_map = {}
+
+for _, row in df_sentient.iterrows():
+    classification_map[row['classification']] = row['classification']
+    classification_map[row['species_name']] = row['classification']
+    classification_map[row['character_name']] = row['classification']
+
+# Build the label_to_classification mapping using this
+label_to_classification = {}
+
+for label in labels:
+    if label == 'sentient':
+        continue
+    classification = classification_map.get(label, 'unknown')
+    label_to_classification[label] = classification
+
+# Assign custom colors based on depth and classification
+colors = []
+for i, label in enumerate(labels):
+    classification = label_to_classification.get(label, 'unknown')
+    base_color = base_colors.get(classification, '#AAAAAA')
+
+    # Determine depth: how many parents up to 'sentient'
+    depth = 0
+    parent = parents[i]
+    while parent != '' and parent != 'sentient':
+        depth += 1
+        try:
+            idx = labels.index(parent)
+            parent = parents[idx]
+        except:
+            break
+
+    if label == 'sentient':
+        colors.append('white')
+    else:
+        dark_factor = 0.25 * depth  # darker as we go deeper
+        colors.append(darken(base_color, dark_factor))
+
+# Assign colors & text styles
+fig.update_traces(
+    marker=dict(colors=colors, line=dict(color='white', width=1)),
+    insidetextfont=dict(family='Helvetica', color='black')
+)
+
+# Make center label black
+text_colors = ['black' if label == 'sentient' else 'white' for label in labels]
+fig.data[0]['textfont']['color'] = text_colors
+
+# Layout
+fig.update_layout(
+    font=dict(color='black', family='Helvetica'),
+    paper_bgcolor='black',
+    plot_bgcolor='black',
+    margin=dict(t=80, l=0, r=0, b=0),
+    coloraxis_showscale=False
+)
+
+fig.show()
+```
+
+
+## Character arcs of returning characters
+
+The appearance of recurring characters in the different films.
+
+```{python}
+#prep data for character arc plot
+
+# Sort by movie release order
+movie_order = (
+    df[['title', 'episode_id', 'release_date']]
+    .drop_duplicates()
+    .sort_values('episode_id')
+    .reset_index(drop=True)
+)
+
+# Map movie titles to numeric positions (for plotting)
+movie_order['x'] = range(len(movie_order))
+movie_map = dict(zip(movie_order['title'], movie_order['x']))
+
+# Apply x-coordinates to your data
+df['x'] = df['title'].map(movie_map)
+
+# Count how many unique movies each character appears in
+character_counts = df.groupby('character_name')['title'].nunique()
+
+# Sort characters by number of movie appearances (descending)
+sorted_characters = character_counts.sort_values(ascending=True)
+
+# Limit to recurring characters
+recurring_characters = sorted_characters[sorted_characters > 1].index.tolist()
+
+# limit to recurring characters
+df = df.query("character_name in @recurring_characters")
+
+# Assign y-positions based on this order
+char_map = {name: i for i, name in enumerate(recurring_characters)}
+df['y'] = df['character_name'].map(char_map)
+
+# Sort for line drawing
+df = df.sort_values(by=['character_name', 'x'])
+```
+
+```{python}
+# Add linebreaks to movie names
+
+titles_with_spaces = {
+'The Phantom Menace':'The Phantom\nMenace',
+'Attack of the Clones':'Attack of\nthe Clones',
+'Revenge of the Sith':'Revenge of\nthe Sith',
+'A New Hope': 'A New Hope',
+'The Empire Strikes Back':'The Empire\nStrikes\nBack',
+'Return of the Jedi':'Return of\nthe Jedi'} 
+
+movie_order['title_pretty'] = movie_order['title'].map(titles_with_spaces).fillna(df['title'])
+```
+
+```{python}
+#| fig-cap: "Continuous story arcs (lighter line) and story arcs that skip some movies (darker lines) shown for all recurring characters."
+#| label: storyarcs
+
+fig = plt.figure(figsize=(6, 8))
+ax = plt.gca()
+
+# Draw lines per character
+for char, group in df.groupby('character_name'):
+    x_vals = group['x'].tolist()
+    y_val = char_map[char]
+
+    # Go through pairs of consecutive appearances
+    for i in range(len(x_vals) - 1):
+        x1, x2 = x_vals[i], x_vals[i + 1]
+        # if story arc is continuous (two consecutive movies), use a lighter color, else use a darker one
+        color = 'white' if x2 - x1 == 1 else 'slategray'
+        plt.plot([x1, x2], [y_val, y_val], color=color, linewidth=5, alpha=0.7)
+
+# Plot dots
+plt.scatter(df['x'], df['y'], color='white', s=20, zorder=3)
+
+# Add shaded trilogy regions
+plt.axvspan(-0.2, 2.5, color='white', alpha=0.2)
+
+# Trilogy labels
+plt.text(-0.1, -1.2, "Prequel Trilogy", color='white')
+plt.text(3.8, -1.2, "Original Trilogy", color='white')
+
+# Formatting
+plt.yticks(list(char_map.values()), list(char_map.keys()), color='white', size=8)
+plt.xticks(movie_order['x'], movie_order['title_pretty'], ha='center', color='white', size=9)
+ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False)
+
+# no labels
+plt.xlabel("")
+plt.ylabel("")
+plt.title("")
+
+# dark mode
+plt.tight_layout()
+fig.patch.set_facecolor('black')
+ax.set_facecolor('black')
+
+# display
 plt.show()
 ```
