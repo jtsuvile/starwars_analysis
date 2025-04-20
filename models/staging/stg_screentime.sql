@@ -6,7 +6,7 @@ with source as (
 
 renamed as (
     select 
-        character as character_name
+        character_name
         ,film_name
         ,episode
         ,proportion

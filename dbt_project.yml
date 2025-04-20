@@ -22,13 +22,6 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
-seeds:
-  starwars_analysis:  # This should match your project name
-    raw_screentime:
-      quote: '"'
-      escape: '"'
-      strict: false
-
 models:
   starwars_analysis:
     materialized: table

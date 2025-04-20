@@ -35,10 +35,10 @@ for section in all_screentimes_html:
         episode_str_list = episode_str.split('\n')
         episode_str_list = [x for x in episode_str_list if x != '']
         episode_df = pd.DataFrame({'appearances': episode_str_list[1:]})
-        episode_df[['character', 'sep_1', 'minutes', 'sep_2', 'proportion']] \
+        episode_df[['character_name', 'sep_1', 'minutes', 'sep_2', 'proportion']] \
             = episode_df['appearances'].str\
             .split(r"(/| - )", expand=True, regex=True)
-        episode_df = episode_df[['character', 'minutes', 'proportion']]
+        episode_df = episode_df[['character_name', 'minutes', 'proportion']]
         episode_df['film'] = episode_str_list[0]
         df = pd.concat([df, episode_df])
 
@@ -49,9 +49,15 @@ df['proportion'] = df['proportion'].str.strip().str.replace('%', '')
 df['minutes'] = df['minutes'].apply(time_to_minutes)
 # split name column to more informative columns
 df[['episode', 'film_name', 'release_year']] = df['film'].str\
-    .extract(r'EPISODE (\w+) - (.+) \((\d{4})\)')
-df = df.drop(columns='film')
+   .extract(r'EPISODE (\w+) - (.+) \((\d{4})\)')
+df['character_name'] = df['character_name'].str.replace(r"[\'\.]", "",
+                                                        regex=True)
+df['character_name'] = df['character_name'].str.replace("é", "e")
+df['character_name'] = df['character_name'].str.replace("-", "")
+
+df = df.drop(columns=['film'])
 
 df.to_csv('/Users/juusu53/Documents/code/starwars_analysis/' +
-          'starwars_analysis/seeds/raw_screentime.csv', index=False,
+          'starwars_analysis/seeds/raw_screentime.csv',
+          encoding="utf-8", sep=',', index=False,
           quoting=csv.QUOTE_ALL)
