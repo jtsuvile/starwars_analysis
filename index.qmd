@@ -175,11 +175,12 @@ plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
 ```
 
-## Species representation
+## Characters and species
 
-The Star Wars universe has a range of different species that are represented. The majority of these species can be classified as *mammal*. This is represented in the character gallery of the movies, where the majority of named characters in each movie is a mammal. This is particularly true in the original trilogy, where the only non-mammal named characters are the druids R2-D2 and C-3PO, and Jabba Desilijic Tiure, who is more commonly known as Jabba de Hutt, who belongs to the Hutt species (classification: gastropod).
+The Star Wars universe has a range of different species that are represented. The majority of these species can be classified as *mammal*. Other possible classifications of species are amphibian, reptilian, artificial, gastropod, insectoid, and unknown.
 
-Moreover, the following plot clearly shows a more numerous character gallery in the prequel trilogy, which was published later, compared with the original trilogy. The plot is interactive, so you can hover over the different data points to see a full list of named characters from that species class in that movie.
+Of mammalian species, the species with by far the most named characters is *human*.
+The plot is interactive, so you can hover over the different sectors to see the relevant classification, species, and designation.
 
 ```{python}
 # prep data for species plot
@@ -209,7 +210,146 @@ roman_numerals = {
 
 df_w_species['episode_roman'] = df_w_species['episode_id'].map(roman_numerals)
 
+# Clean the data for sunburst plot
+df_cleaned = df_w_species[['character_name', 'species_name', 'classification', 'designation']].drop_duplicates()
+df_sentient = df_cleaned[df_cleaned['designation'] == 'sentient'].copy()
+
 ```
+
+
+```{python}
+# general definitions and helper functions
+# Base classification colors (light variants)
+base_colors = {
+    'mammal': '#FFE81F',        # Yellow
+    'reptilian': '#00FFEA',     # Cyan
+    'amphibian': '#7FFF00',     # Green
+    'insectoid': '#FF5733',     # Orange
+    'artificial': '#FF00FF',    # Magenta
+    'unknown': '#AAAAAA'        # Gray fallback
+}
+
+# Helper to darken a hex color
+def darken(hex_color, factor):
+    r, g, b = to_rgb(hex_color)
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    l = max(0, l * (1 - factor))  # reduce lightness
+    r2, g2, b2 = colorsys.hls_to_rgb(h, l, s)
+    return f'rgb({int(r2*255)}, {int(g2*255)}, {int(b2*255)})'
+
+# Function to format the tooltip
+def format_tooltip(label, labels, parents):
+    # Initialize the path list
+    path = []
+    
+    # Traverse the hierarchy from the character up to the root (sentient)
+    current_label = label
+    while current_label != '' and current_label != 'sentient':  
+        path.append(current_label)
+        current_label = parents[labels.index(current_label)].split('/')[-1]  # Find the parent label
+    path.reverse()  # Reverse the path to start from 'sentient'
+
+    # Define the hierarchy levels
+    hierarchy = ["Classification", "Species", "Character"]
+
+    # Create the formatted tooltip
+    tooltip = ""
+    for level, value in zip(hierarchy, path):
+        tooltip += f"{level}: {value}<br>"
+    return tooltip
+
+```
+
+
+```{python}
+# Plot
+
+# Build hierarchy data
+fig = px.sunburst(
+    df_sentient,
+    path=['designation', 'classification', 'species_name', 'character_name'],
+    values=None,
+    branchvalues='total'
+)
+
+# Get labels & parents
+labels = list(fig.data[0]['labels'])  # Convert to list
+parents = list(fig.data[0]['parents'])  # Convert to list
+
+# Create a lookup table from character/species to classification
+classification_map = {}
+
+for _, row in df_sentient.iterrows():
+    classification_map[row['classification']] = row['classification']
+    classification_map[row['species_name']] = row['classification']
+    classification_map[row['character_name']] = row['classification']
+
+# Build the label_to_classification mapping using this
+label_to_classification = {}
+
+for label in labels:
+    if label == 'sentient':
+        continue
+    classification = classification_map.get(label, 'unknown')
+    label_to_classification[label] = classification
+
+# Assign custom colors based on depth and classification
+colors = []
+for i, label in enumerate(labels):
+    classification = label_to_classification.get(label, 'unknown')
+    base_color = base_colors.get(classification, '#AAAAAA')
+
+    # Determine depth: how many parents up to 'sentient'
+    depth = 0
+    parent = parents[i]
+    while parent != '' and parent != 'sentient':
+        depth += 1
+        try:
+            idx = labels.index(parent)
+            parent = parents[idx]
+        except:
+            break
+
+    if label == 'sentient':
+        colors.append('white')
+    else:
+        dark_factor = 0.25 * depth  # darker as we go deeper
+        colors.append(darken(base_color, dark_factor))
+
+# Assign hovertemplate with custom tooltip
+fig.update_traces(
+    marker=dict(colors=colors, line=dict(color='white', width=1)),
+    insidetextfont=dict(family='Helvetica', color='white'),
+    # Custom tooltip for each label
+    hovertemplate=[format_tooltip(label, labels, parents) for label in labels]  
+)
+
+# Assign colors & text styles
+fig.update_traces(
+    marker=dict(colors=colors, line=dict(color='white', width=1)),
+    insidetextfont=dict(family='Helvetica', color='black')
+)
+
+# Make center label black
+text_colors = ['black' if label == 'sentient' else 'white' for label in labels]
+fig.data[0]['textfont']['color'] = text_colors
+
+# Layout
+fig.update_layout(
+    font=dict(color='black', family='Helvetica'),
+    paper_bgcolor='black',
+    plot_bgcolor='black',
+    coloraxis_showscale=False
+)
+
+fig.show()
+```
+
+## Species representation in the two trilogies
+
+The high prevalence of mammalian characters comes from the movies, where the majority of named characters in each movie is a mammal. This is particularly true in the original trilogy, where the only non-mammal named characters are the druids R2-D2 and C-3PO; Jabba Desilijic Tiure, who is more commonly known as Jabba de Hutt, who belongs to the Hutt species (classification: gastropod); and Ackbar, who belongs to the Mon Calamari species (classification: amphibian).
+
+Moreover, the following plot clearly shows a more numerous character gallery in the prequel trilogy, which was published later, compared with the original trilogy. The plot is interactive, so you can hover over the different data points to see a full list of named characters from that species class in that movie.
 
 ```{python}
 
@@ -280,109 +420,9 @@ fig.show()
 
 ```
 
-## Characters and species
-
-```{python}
-# Clean the data
-df_cleaned = df_w_species[['character_name', 'species_name', 'classification', 'designation']].drop_duplicates()
-df_sentient = df_cleaned[df_cleaned['designation'] == 'sentient'].copy()
-
-# Base classification colors (light variants)
-base_colors = {
-    'mammal': '#FFE81F',        # Yellow
-    'reptilian': '#00FFEA',     # Cyan
-    'amphibian': '#7FFF00',     # Green
-    'insectoid': '#FF5733',     # Orange
-    'artificial': '#FF00FF',    # Magenta
-    'unknown': '#AAAAAA'        # Gray fallback
-}
-
-# Helper to darken a hex color
-def darken(hex_color, factor):
-    r, g, b = to_rgb(hex_color)
-    h, l, s = colorsys.rgb_to_hls(r, g, b)
-    l = max(0, l * (1 - factor))  # reduce lightness
-    r2, g2, b2 = colorsys.hls_to_rgb(h, l, s)
-    return f'rgb({int(r2*255)}, {int(g2*255)}, {int(b2*255)})'
-
-# Build hierarchy data
-fig = px.sunburst(
-    df_sentient,
-    path=['designation', 'classification', 'species_name', 'character_name'],
-    values=None,
-    branchvalues='total'
-)
-
-# Get labels & parents
-labels = fig.data[0]['labels']
-parents = fig.data[0]['parents']
-
-# Create a lookup table from character/species to classification
-classification_map = {}
-
-for _, row in df_sentient.iterrows():
-    classification_map[row['classification']] = row['classification']
-    classification_map[row['species_name']] = row['classification']
-    classification_map[row['character_name']] = row['classification']
-
-# Build the label_to_classification mapping using this
-label_to_classification = {}
-
-for label in labels:
-    if label == 'sentient':
-        continue
-    classification = classification_map.get(label, 'unknown')
-    label_to_classification[label] = classification
-
-# Assign custom colors based on depth and classification
-colors = []
-for i, label in enumerate(labels):
-    classification = label_to_classification.get(label, 'unknown')
-    base_color = base_colors.get(classification, '#AAAAAA')
-
-    # Determine depth: how many parents up to 'sentient'
-    depth = 0
-    parent = parents[i]
-    while parent != '' and parent != 'sentient':
-        depth += 1
-        try:
-            idx = labels.index(parent)
-            parent = parents[idx]
-        except:
-            break
-
-    if label == 'sentient':
-        colors.append('white')
-    else:
-        dark_factor = 0.25 * depth  # darker as we go deeper
-        colors.append(darken(base_color, dark_factor))
-
-# Assign colors & text styles
-fig.update_traces(
-    marker=dict(colors=colors, line=dict(color='white', width=1)),
-    insidetextfont=dict(family='Helvetica', color='black')
-)
-
-# Make center label black
-text_colors = ['black' if label == 'sentient' else 'white' for label in labels]
-fig.data[0]['textfont']['color'] = text_colors
-
-# Layout
-fig.update_layout(
-    font=dict(color='black', family='Helvetica'),
-    paper_bgcolor='black',
-    plot_bgcolor='black',
-    margin=dict(t=80, l=0, r=0, b=0),
-    coloraxis_showscale=False
-)
-
-fig.show()
-```
-
-
 ## Character arcs of returning characters
 
-The appearance of recurring characters in the different films.
+The appearance of recurring characters in the different films. This plot confirms the much wider character gallery of the prequel trilogy compared with the original trilogy. Most recurring characters are present in consecutive films, but some characters such as Jabba Desilijic Tiure (Jabba de Hutt) have a more spread out story arc. Somewhat surprisingly two key characters, Palpatine and Yoda, both are missing from A New Hope (EPISODE IV), which was the first film to be released in the Star Wars cinematic universe.
 
 ```{python}
 #prep data for character arc plot
