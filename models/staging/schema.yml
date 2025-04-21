@@ -27,6 +27,10 @@ models:
         description: "The gender of this person. Either 'Male', 'Female' or 'unknown', 'n/a' if the person does not have a gender."
       - name: species
         description: "An array of species resource URLs that this person belongs to."
+      - name: created
+        description: "The ISO 8601 date format of the time that this resource was created."
+      - name: edited
+        description: "The ISO 8601 date format of the time that this resource was edited."
 
   - name: stg_errata_people
     description: "Fact table relating to the characters in the films"
@@ -68,6 +72,10 @@ models:
         description: "An array of vehicle resource URLs that are in this film."
       - name: species
         description: "An array of species resource URLs that are in this film."
+      - name: created
+        description: "The ISO 8601 date format of the time that this resource was created."
+      - name: edited
+        description: "The ISO 8601 date format of the time that this resource was edited."
 
   - name: stg_species
     description: "Dimension table about the different species present in the movies"
@@ -101,3 +109,7 @@ models:
         description: "An array of People URL Resources that are a part of this species."
       - name: films
         description: "An array of Film URL Resources that this species has appeared in."
+      - name: created
+        description: "The ISO 8601 date format of the time that this resource was created."
+      - name: edited
+        description: "The ISO 8601 date format of the time that this resource was edited."
