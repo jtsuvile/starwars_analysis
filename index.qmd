@@ -109,7 +109,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-Digging more into the words used in the opening crawls shows differences between the prequel trilogy and the original trilogy. The most distinctive words in the prequel trilogy opening crawls reflect the key themes in the trilogy: the corruption of the Galactic Republic and its last chancellor, Sheev Palpatine. The most distinctive words in the original trilogy reflect the themes central in those movies: the quest for freedom by the Rebel Alliance and the central role of Luke Skywalker.
+Further inspection of the words used in the opening crawls shows differences between the prequel trilogy and the original trilogy. The most distinctive words in the prequel trilogy opening crawls reflect the key themes in the trilogy: the corruption of the Galactic Republic and its last chancellor, Sheev Palpatine. The most distinctive words in the original trilogy reflect the themes central in those movies: the quest for freedom by the Rebel Alliance and the central role of Luke Skywalker.
 
 
 ```{python}
@@ -221,12 +221,13 @@ df_sentient = df_cleaned[df_cleaned['designation'] == 'sentient'].copy()
 # general definitions and helper functions
 # Base classification colors (light variants)
 base_colors = {
-    'mammal': '#FFE81F',        # Yellow
-    'reptilian': '#00FFEA',     # Cyan
-    'amphibian': '#7FFF00',     # Green
-    'insectoid': '#FF5733',     # Orange
-    'artificial': '#FF00FF',    # Magenta
-    'unknown': '#AAAAAA'        # Gray fallback
+    'mammal': '#dba579',        # "jedi"
+    'reptilian': '#334e30',     # "naboo"
+    'amphibian': '#715A62',     # "dragobah"
+    'insectoid': '#2e557c',     # "hoth3"
+    'artificial': '#B99D31',    # "c3po"
+    'gastropod': '#554269',      # "yoda"
+    'unknown': '#aba49e'        # "phasma"
 }
 
 # Helper to darken a hex color
@@ -262,7 +263,7 @@ def format_tooltip(label, labels, parents):
 
 
 ```{python}
-# Plot
+#| label: circular-treemap
 
 # Build hierarchy data
 fig = px.sunburst(
@@ -311,23 +312,17 @@ for i, label in enumerate(labels):
             break
 
     if label == 'sentient':
-        colors.append('white')
+        colors.append('black')
     else:
         dark_factor = 0.25 * depth  # darker as we go deeper
         colors.append(darken(base_color, dark_factor))
 
 # Assign hovertemplate with custom tooltip
 fig.update_traces(
-    marker=dict(colors=colors, line=dict(color='white', width=1)),
-    insidetextfont=dict(family='Helvetica', color='white'),
+    marker=dict(colors=colors),
+    insidetextfont=dict(family='Helvetica'),
     # Custom tooltip for each label
     hovertemplate=[format_tooltip(label, labels, parents) for label in labels]  
-)
-
-# Assign colors & text styles
-fig.update_traces(
-    marker=dict(colors=colors, line=dict(color='white', width=1)),
-    insidetextfont=dict(family='Helvetica', color='black')
 )
 
 # Make center label black
@@ -336,7 +331,7 @@ fig.data[0]['textfont']['color'] = text_colors
 
 # Layout
 fig.update_layout(
-    font=dict(color='black', family='Helvetica'),
+    font=dict(color='white', family='Helvetica'),
     paper_bgcolor='black',
     plot_bgcolor='black',
     coloraxis_showscale=False
@@ -344,6 +339,8 @@ fig.update_layout(
 
 fig.show()
 ```
+
+Known species and named characters belonging to these species from the Star Wars prequel trilogy and the original trilogy.
 
 ## Species representation in the two trilogies
 
@@ -377,7 +374,6 @@ grouped_full['character_count'] = grouped_full['character_count'].fillna(0)
 
 ```{python}
 #| label: species-representation-count
-#| fig-cap: Species representation by main classification in the different movies shows more characters and more non-mammal characters in the prequel trilogy compared with the original trilogy
 
 fig = px.area(
     grouped_full,
@@ -403,9 +399,9 @@ fig.update_traces(
 fig.add_vrect(x0=0, x1=2.5, fillcolor='white', opacity=0.2, line_width=0)
 
 # Trilogy labels
-fig.add_annotation(x=0.6, y=30,
+fig.add_annotation(x=0.6, y=40,
                    text="Prequel Trilogy", showarrow=False, font=dict(color='white', size=16))
-fig.add_annotation(x=4.4, y=30,
+fig.add_annotation(x=4.4, y=40,
                    text="Original Trilogy", showarrow=False, font=dict(color='white', size=16))
 
 fig.update_layout(
@@ -419,6 +415,8 @@ fig.update_layout(
 fig.show()
 
 ```
+
+Species representation by main classification in the different movies shows more characters and more non-mammal characters in the prequel trilogy compared with the original trilogy.
 
 ## Character arcs of returning characters
 
@@ -477,7 +475,7 @@ movie_order['title_pretty'] = movie_order['title'].map(titles_with_spaces).filln
 ```
 
 ```{python}
-#| fig-cap: "Continuous story arcs (lighter line) and story arcs that skip some movies (darker lines) shown for all recurring characters."
+#| fig-cap: Continuous story arcs (lighter line) and story arcs that skip some movies (darker lines) shown for all recurring characters.
 #| label: storyarcs
 
 fig = plt.figure(figsize=(6, 8))
